@@ -2,6 +2,8 @@
 # coding: utf-8
 # Sublist3r v1.0
 # By Ahmed Aboul-Ela - twitter.com/aboul3la
+#
+# Fix added for <BR> tags in output by @xer0dayz
 
 # modules in standard library
 import re
@@ -788,7 +790,7 @@ class CrtSearch(enumratorBaseThreaded):
         return self.subdomains
 
     def extract_domains(self, resp):
-        link_regx = re.compile('<TD>(.*?)</TD>')
+        link_regx = re.compile('<TD>(?!<A)(.*?)</TD>')
         try:
             links = link_regx.findall(resp)
             for link in links:
@@ -798,6 +800,12 @@ class CrtSearch(enumratorBaseThreaded):
 
                 if '@' in subdomain:
                     subdomain = subdomain[subdomain.find('@')+1:]
+
+                if '<BR>' in subdomain:
+                    for brlink in subdomain.split('<BR>'):
+                        if brlink not in self.subdomains and brlink != self.domain:
+                            self.subdomains.append(brlink)
+                    continue
 
                 if subdomain not in self.subdomains and subdomain != self.domain:
                     if self.verbose:
